@@ -1,57 +1,130 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package syst17796_project;
 
-import java.util.ArrayList;
+import java.util.Scanner;
 
-/**
- * The class that models your game. You should create a more specific child of this class and instantiate the methods
- * given.
- *
- * @author dancye
- * @author Paul Bonenfant Jan 2020
- */
-public abstract class Game {
+public class Game {
 
-    private final String name;//the title of the game
-    private ArrayList<Player> players;// the players of the game
+    private Deck deck, discarded;
+    private Dealer dealer;
+    private Player player;
+    private int wins, losses, ties;
 
-    public Game(String name) {
-        this.name = name;
-        players = new ArrayList();
+    public Game(){
+
+        deck = new Deck(true);
+        discarded = new Deck();
+        dealer = new Dealer();
+        player = new Player();
+        deck.shuffle();
+        startRound();
     }
 
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
+    private void startRound(){
+/*        wins = 0; losses = 0; pushes = 1;
+        Card testCard = new Card(Suit.CLUB,Rank.NINE);
+        Card testCard2 = new Card(Suit.CLUB, Rank.TEN);*/
+        //If this isn't the first time, display the users score and put their cards back in the deck
+        if(wins>0 || losses>0 || ties > 0){
+            System.out.println();
+            System.out.println("Starting Next Round... Wins: " + wins + " Losses: "+ losses+ " Ties: "+ties);
+            dealer.getHand().discardHandToDeck(discarded);
+            player.getHand().discardHandToDeck(discarded);
+        }
+
+        //Check to make sure the deck has at least 4 cards left
+        if(deck.cardsLeft() < 4){
+            deck.reloadDeckFromDiscard(discarded);
+        }
+
+        //Give the dealer two cards
+        dealer.getHand().takeCardFromDeck(deck);
+        dealer.getHand().takeCardFromDeck(deck);
+
+        //Give the player two cards
+        player.getHand().takeCardFromDeck(deck);
+        player.getHand().takeCardFromDeck(deck);
+
+/*        //TEST
+        player.getHand().addCard(testCard);
+        player.getHand().addCard(testCard2);*/
+
+        //Show the dealers hand with one card face down
+        dealer.printFirstHand();
+
+        //Show the player's hand
+        player.printHand();
+
+        //Check if dealer has BlackJack to start
+        if(dealer.hasBlackjack()){
+            //Show the dealer has BlackJack
+            dealer.printHand();
+
+            //Check if the player also has BlackJack
+            if(player.hasBlackjack()){
+                //End the round with a push
+                System.out.println("You both have 21 - Tie.");
+                ties++;
+                startRound();
+            }
+            else{
+                System.out.println("Dealer has BlackJack. You lose.");
+                dealer.printHand();
+                losses++;
+                startRound();
+            }
+        }
+
+        //Check if player has blackjack to start
+        //If we got to this point, we already know the dealer didn't have blackjack
+        if(player.hasBlackjack()){
+            System.out.println("You have Blackjack! You win!");
+            wins++;
+            startRound();
+        }
+
+        //Let the player decide what to do next
+        player.makeDecision(deck, discarded);
+
+        //Check if they busted
+        if(player.getHand().calculatedValue() > 21){
+            System.out.println("You have gone over 21.");
+            losses ++;
+            startRound();
+        }
+
+        //Now it's the dealer's turn
+        dealer.printHand();
+        while(dealer.getHand().calculatedValue()<17){
+            dealer.hit(deck, discarded);
+        }
+
+        //Check who wins
+        if(dealer.getHand().calculatedValue()>21){
+            System.out.println("Dealer busts");
+            wins++;
+        }
+        else if(dealer.getHand().calculatedValue() > player.getHand().calculatedValue()){
+            System.out.println("You lose.");
+            losses++;
+        }
+        else if(player.getHand().calculatedValue() > dealer.getHand().calculatedValue()){
+            System.out.println("You win.");
+            wins++;
+        }
+        else{
+            System.out.println("Tie.");
+            ties++;
+        }
+
+        startRound();
     }
 
-    /**
-     * @return the players of this game
-     */
-    public ArrayList<Player> getPlayers() {
-        return players;
+    public static void pause(){
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * @param players the players of this game
-     */
-    public void setPlayers(ArrayList<Player> players) {
-        this.players = players;
-    }
-
-    /**
-     * Play the game. This might be one method or many method calls depending on your game.
-     */
-    public abstract void play();
-
-    /**
-     * When the game is over, use this method to declare and display a winning player.
-     */
-    public abstract void declareWinner();
-
-}//end class
+}

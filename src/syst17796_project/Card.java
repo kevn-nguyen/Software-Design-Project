@@ -1,24 +1,55 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package syst17796_project;
 
 /**
  * A class to be used as the base Card class for the project. Must be general enough to be instantiated for any Card
  * game. Students wishing to add to the code should remember to add themselves as a modifier.
- *
- * @author dancye
+
  */
-public abstract class Card {
-    //default modifier for child classes
+public class Card implements Comparable<Card>{
 
-    /**
-     * Students should implement this method for their specific children classes
-     *
-     * @return a String representation of a card. Could be an UNO card, a regular playing card etc.
-     */
+     private Suit suit;
+     private Rank rank;
+
+
+    public Card(Suit suit, Rank rank){
+        this.suit = suit;
+        this.rank = rank;
+    }
+
+    public Card(Card card){
+        this.suit = card.getSuit();
+        this.rank = card.getRank();
+    }
+
+    public int getValue(){
+        return rank.rankValue;
+    }
+
+    public Suit getSuit(){
+        return suit;
+    }
+
+    public Rank getRank(){
+        return rank;
+    }
+
+    public String toString(){
+        return ("["+rank+" of "+ suit + "] ("+this.getValue()+")");
+
+    }
+
+    
     @Override
-    public abstract String toString();
-
+    public int compareTo(Card c) {
+        
+        if(this.getValue() > c.getValue()){
+            return 1;
+        }
+        else if(this.getValue() < c.getValue()){
+            return -1;
+        }
+        else{
+            return 0;
+        }
+    }
 }
